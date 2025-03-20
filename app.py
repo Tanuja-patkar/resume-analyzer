@@ -1,28 +1,20 @@
 import streamlit as st
 import spacy
-import subprocess
 import os
 import string
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# ✅ Ensure spaCy model is installed
-spacy_model = "en_core_web_sm"
+# ✅ Load pre-installed spaCy model
+nlp = spacy.load("en_core_web_sm")
 
-try:
-    nlp = spacy.load(spacy_model)
-except OSError:
-    with st.spinner(f"Downloading spaCy model `{spacy_model}`... Please wait!"):
-        subprocess.run(["python", "-m", "spacy", "download", spacy_model], check=True)
-    nlp = spacy.load(spacy_model)
-
-# 🔹 Preprocessing function
+# Function to preprocess text
 def preprocess_text(text):
     doc = nlp(text.lower())  # Convert to lowercase and tokenize
     words = [token.lemma_ for token in doc if token.is_alpha and token.text not in string.punctuation]
     return " ".join(words)
 
-# 🔹 Function to compute similarity
+# Function to compute similarity
 def compute_similarity(resume_text, job_description):
     corpus = [preprocess_text(resume_text), preprocess_text(job_description)]
     vectorizer = TfidfVectorizer()
@@ -30,7 +22,7 @@ def compute_similarity(resume_text, job_description):
     similarity_score = cosine_similarity(tfidf_matrix)[0][1]
     return similarity_score
 
-# 🎯 Streamlit UI
+# Streamlit UI
 st.title("📄 AI Resume Screening System")
 
 st.header("🔹 Enter Job Description")
